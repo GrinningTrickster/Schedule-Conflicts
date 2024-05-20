@@ -1,0 +1,42 @@
+-- Drop the existing Schedule table if it exists
+DROP TABLE IF EXISTS Schedule;
+
+
+-- Create the Schedule table
+CREATE TABLE Schedule (
+    trainerid int,
+    starttime datetime,
+    endtime datetime
+);
+
+
+-- Insert data into the Schedule table
+INSERT INTO Schedule (trainerid, starttime, endtime)
+VALUES
+    (1234, '2018-01-10 08:30', '2018-01-10 09:00'),
+    (1234, '2018-01-10 08:45', '2018-01-10 09:15'),
+    (1234, '2018-01-10 09:30', '2018-01-10 10:00'),
+    (2345, '2018-01-10 08:45', '2018-01-10 09:15'),
+    (2345, '2018-01-10 09:30', '2018-01-10 10:00'),
+    (2345, '2018-01-10 10:50', '2018-01-10 11:00'),
+    (2345, '2018-01-10 09:50', '2018-01-10 10:00');
+
+
+-- Query to find if a trainer has a schedule overlap
+WITH subq AS (
+    SELECT 
+        trainerid, 
+        starttime, 
+        endtime,
+        LEAD(endtime, 1, 0) OVER (PARTITION BY trainerid ORDER BY starttime DESC) AS nextendtime
+    FROM 
+        Schedule
+)
+SELECT 
+    trainerid, 
+    starttime, 
+    endtime 
+FROM 
+    subq
+WHERE 
+    nextendtime > starttime;
